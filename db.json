@@ -1,0 +1,33 @@
+{
+  "startDate": "2025-04-07",
+  "albums": [
+    {
+      "id": "album-internal-1",
+      "name": "Our First Memories",
+      "cover": "default-cover.jpg",
+      "photos": []
+    }
+  ],
+  "notes": [
+    {
+      "id": "note-internal-1",
+      "author": "Antigravity",
+      "content": "Welcome to your shared space! 🌸",
+      "date": "2026-04-09T12:00:00Z"
+    },
+    {
+      "id": "note-1775710066105",
+      "title": "Our First Trip",
+      "author": "Him",
+      "content": "I had so much fun on our first trip. Can't wait for the next one!",
+      "date": "2026-04-09T04:47:46.105Z"
+    },
+    {
+      "id": "note-1775710286268",
+      "title": "Test Subject from Ally",
+      "author": "Ally",
+      "content": "This is a test letter from Ally. Love you!",
+      "date": "2026-04-09T04:51:26.268Z"
+    }
+  ]
+}

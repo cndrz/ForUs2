@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ForUs | Our Shared Story</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="light-mode">
+    <header style="display: none;" id="header-main">
+        <div class="logo">ForUs🌸</div>
+        <nav>
+            <button id="nav-home" class="nav-link active">Home</button>
+            <button id="nav-albums" class="nav-link">Albums</button>
+            <button id="nav-letters" class="nav-link">Letters</button>
+        </nav>
+        <div class="header-actions">
+            <button id="theme-toggle" class="icon-btn" aria-label="Toggle Dark Mode">
+                <span class="sun-icon">☀️</span>
+                <span class="moon-icon">🌙</span>
+            </button>
+            <button id="btn-logout" class="btn-text">Logout</button>
+        </div>
+    </header>
+
+    <main id="app-container">
+        <!-- Login Section -->
+        <section id="view-login" class="view active">
+            <div class="login-card">
+                <h1>Welcome Back ❤️</h1>
+                <p>Login to access our shared space</p>
+                <div class="login-form">
+                    <input type="email" id="login-email" placeholder="Email Address">
+                    <input type="password" id="login-password" placeholder="Password">
+                    <button id="btn-do-login" class="btn primary">Enter Our Space</button>
+                    <p id="login-error" class="error-text" style="display: none;">Invalid credentials. Try again!</p>
+                </div>
+            </div>
+        </section>
+        <!-- Home Section -->
+        <section id="view-home" class="view">
+            <div class="hero">
+                <h1>Our Story</h1>
+                <p>Together since April 7, 2025</p>
+                <div id="counter-display" class="counter">
+                    <div class="counter-item">
+                        <span id="years" class="number">0</span>
+                        <span class="label">Years</span>
+                    </div>
+                    <div class="counter-item">
+                        <span id="months" class="number">0</span>
+                        <span class="label">Months</span>
+                    </div>
+                    <div class="counter-item">
+                        <span id="days" class="number">0</span>
+                        <span class="label">Days</span>
+                    </div>
+                </div>
+                <div class="heart">❤️</div>
+            </div>
+        </section>
+
+        <!-- Albums Section -->
+        <section id="view-albums" class="view">
+            <div class="section-header">
+                <h2>Photo Albums</h2>
+                <button id="btn-add-album" class="btn primary">+ New Album</button>
+            </div>
+            <div id="albums-grid" class="grid"></div>
+        </section>
+
+        <!-- Album Detail View -->
+        <section id="view-album-detail" class="view">
+            <div class="section-header">
+                <button id="btn-back-albums" class="btn-text">← Back to Albums</button>
+                <h2 id="current-album-title">Album Name</h2>
+                <button id="btn-add-photo" class="btn primary">+ Add Photo</button>
+            </div>
+            <div id="photos-grid" class="grid"></div>
+        </section>
+
+        <!-- Letters Section -->
+        <section id="view-letters" class="view">
+            <div class="section-header">
+                <h2>Our Letters</h2>
+                <button id="btn-write-letter" class="btn primary">Write a Note</button>
+            </div>
+            <div id="letters-list" class="list"></div>
+        </section>
+    </main>
+
+    <!-- Modals -->
+    <div id="modal-container" class="modal-overlay">
+        <!-- Add Album Modal -->
+        <div id="modal-add-album" class="modal">
+            <h3>Create New Album</h3>
+            <input type="text" id="input-album-name" placeholder="Album Name (e.g., Our First Date)">
+            <div class="modal-actions">
+                <button class="btn secondary modal-close">Cancel</button>
+                <button id="confirm-add-album" class="btn primary">Create</button>
+            </div>
+        </div>
+
+        <!-- Add Photo Modal -->
+        <div id="modal-add-photo" class="modal">
+            <h3>Add Photo</h3>
+            <div class="file-input-wrapper">
+                <input type="file" id="input-photo-file" accept="image/*" class="hidden-input">
+                <button id="btn-fake-file" class="btn secondary">Choose a Photo</button>
+                <span id="file-name-display" class="file-name-text">No file chosen</span>
+            </div>
+            <input type="text" id="input-photo-caption" placeholder="Short caption...">
+            <div class="modal-actions">
+                <button class="btn secondary modal-close">Cancel</button>
+                <button id="confirm-add-photo" class="btn primary">Upload</button>
+            </div>
+        </div>
+
+
+        <!-- Write Letter Modal -->
+        <div id="modal-write-letter" class="modal">
+            <h3>Write a Letter</h3>
+            <input type="text" id="input-letter-title" placeholder="Brief Subject (e.g., Happy 1 Month!)">
+            <label class="input-label">From:</label>
+            <div class="author-selection">
+                <button type="button" class="author-toggle active" data-author="JM">JM</button>
+                <button type="button" class="author-toggle" data-author="Ally">Ally</button>
+            </div>
+            <textarea id="input-letter-content" placeholder="Write something heartfelt..."></textarea>
+            <div class="modal-actions">
+                <button class="btn secondary modal-close">Cancel</button>
+                <button id="confirm-send-letter" class="btn primary">Send</button>
+            </div>
+        </div>
+
+        <!-- View Letter Modal -->
+        <div id="modal-view-letter" class="modal">
+            <div class="letter-content-detail">
+                <p class="letter-meta"><span id="view-author">Author</span> • <span id="view-date">Date</span></p>
+                <h2 id="view-title">Title</h2>
+                <hr>
+                <div id="view-content" class="scrollable-content">Content</div>
+            </div>
+            <div class="modal-actions modal-actions-top-margin">
+                <button class="btn secondary modal-close">Close</button>
+            </div>
+        </div>
+
+
+    </div>
+
+    <script src="js/main.js"></script>
+</body>
+</html>
