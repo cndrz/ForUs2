@@ -1,15 +1,16 @@
-/**
+ /**
  * ForUs - Main Application Logic (Supabase Version - Debug Mode)
  */
+import { createClient } from '@supabase/supabase-js';
 
 // --- Supabase Configuration ---
-const SUPABASE_URL = 'https://gubhrjflcvhzpqvaagnc.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd1YmhyamZsY3ZoenBxdmFhZ25jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU3MDcxMTYsImV4cCI6MjA5MTI4MzExNn0.0Fb_gENYirL7-F_RN_8s7rHbtMQOnErFV32RwMZbhgU';
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 let sb = null;
 try {
     if (SUPABASE_URL && SUPABASE_URL !== 'YOUR_SUPABASE_URL') {
-        sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        sb = createClient(SUPABASE_URL, SUPABASE_KEY);
         console.log('✅ Supabase initialized');
     }
 } catch (e) {
