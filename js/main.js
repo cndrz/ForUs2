@@ -224,7 +224,15 @@ function renderAlbums() {
     appData.albums.forEach(album => {
         const card = document.createElement('div');
         card.className = 'album-card';
-        card.innerHTML = `<div class="album-cover" style="background-image: url('${album.cover_url || '/placeholder-album.jpg'}')"></div><div class="album-info"><h3>${album.name}</h3><p>${album.photos ? album.photos.length : 0} photos</p></div>`;
+        card.innerHTML = `
+            <div class="card-actions">
+                <button class="delete-btn" onclick="event.stopPropagation(); deleteAlbum('${album.id}')">🗑️</button>
+            </div>
+            <div class="album-cover" style="background-image: url('${album.cover_url || '/placeholder-album.jpg'}')"></div>
+            <div class="album-info">
+                <h3>${album.name}</h3>
+                <p>${album.photos ? album.photos.length : 0} photos</p>
+            </div>`;
         card.onclick = () => { currentAlbumId = album.id; showView('view-album-detail'); };
         grid.appendChild(card);
     });
@@ -239,7 +247,13 @@ function renderAlbumDetail() {
     (album.photos || []).forEach(photo => {
         const card = document.createElement('div');
         card.className = 'photo-card';
-        card.innerHTML = `<img src="${photo.url}" class="photo-img"><div class="photo-caption">${photo.caption}</div>`;
+        card.innerHTML = `
+            <div class="card-actions">
+                <button class="delete-btn" onclick="event.stopPropagation(); deletePhoto('${photo.id}', '${photo.url}')">🗑️</button>
+            </div>
+            <img src="${photo.url}" class="photo-img">
+            <div class="photo-caption">${photo.caption}</div>`;
+        card.onclick = () => openPhotoViewer(photo.url, photo.caption);
         grid.appendChild(card);
     });
 }
@@ -263,6 +277,63 @@ function openLetterDetail(letter) {
     document.getElementById('view-title').innerText = letter.title || 'Untitled Letter';
     document.getElementById('view-content').innerText = letter.content;
     openModal('modal-view-letter');
+}
+
+function openPhotoViewer(url, caption) {
+    const img = document.getElementById('viewer-img');
+    const cap = document.getElementById('viewer-caption');
+    if (img) img.src = url;
+    if (cap) cap.innerText = caption || '';
+    openModal('modal-photo-viewer');
+}
+
+// --- Deletion Logic ---
+async function deleteAlbum(id) {
+    if (!confirm('Are you sure you want to delete this entire album and ALL its photos? This cannot be undone.')) return;
+    
+    try {
+        const album = appData.albums.find(a => a.id === id);
+        if (album && album.photos) {
+            // 1. Delete files from storage
+            const fileNames = album.photos.map(p => p.url.split('/').pop());
+            if (fileNames.length > 0) {
+                await sb.storage.from('photos').remove(fileNames);
+            }
+        }
+        
+        // 2. Delete album from DB (cascade should handle photos table if set up, but let's be safe)
+        // If cascade is not set up, we'd delete photos first. Assuming standard setup or manual cleanup.
+        await sb.from('photos').delete().eq('album_id', id);
+        const { error } = await sb.from('albums').delete().eq('id', id);
+        
+        if (error) throw error;
+        
+        fetchData();
+        if (currentAlbumId === id) showView('view-albums');
+    } catch (e) {
+        console.error('Error deleting album:', e);
+        alert('Failed to delete album: ' + e.message);
+    }
+}
+
+async function deletePhoto(id, url) {
+    if (!confirm('Delete this photo?')) return;
+    
+    try {
+        // 1. Delete from Storage
+        const fileName = url.split('/').pop();
+        await sb.storage.from('photos').remove([fileName]);
+        
+        // 2. Delete from DB
+        const { error } = await sb.from('photos').delete().eq('id', id);
+        
+        if (error) throw error;
+        
+        fetchData();
+    } catch (e) {
+        console.error('Error deleting photo:', e);
+        alert('Failed to delete photo: ' + e.message);
+    }
 }
 
 // --- Modal Logic ---
