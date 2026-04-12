@@ -14,7 +14,7 @@
 <body class="light-mode">
     <header style="display: none;" id="header-main">
         <div class="logo">For Us Two 🌸</div>
-        <nav>
+        <nav class="desktop-nav">
             <button id="nav-home" class="nav-link active">Home</button>
             <button id="nav-albums" class="nav-link">Albums</button>
             <button id="nav-letters" class="nav-link">Letters</button>
@@ -27,6 +27,21 @@
             <button id="btn-logout" class="btn-text">Logout</button>
         </div>
     </header>
+
+    <nav class="mobile-nav" id="mobile-nav">
+        <button id="m-nav-home" class="m-nav-link active">
+            <span class="nav-icon">🏠</span>
+            <span class="nav-text">Home</span>
+        </button>
+        <button id="m-nav-albums" class="m-nav-link">
+            <span class="nav-icon">📷</span>
+            <span class="nav-text">Albums</span>
+        </button>
+        <button id="m-nav-letters" class="m-nav-link">
+            <span class="nav-icon">💌</span>
+            <span class="nav-text">Letters</span>
+        </button>
+    </nav>
 
     <main id="app-container">
         <!-- Login Section -->
@@ -59,6 +74,18 @@
                     <div class="counter-item">
                         <span id="days" class="number">0</span>
                         <span class="label">Days</span>
+                    </div>
+                    <div class="counter-item">
+                        <span id="hours" class="number">00</span>
+                        <span class="label">Hrs</span>
+                    </div>
+                    <div class="counter-item">
+                        <span id="minutes" class="number">00</span>
+                        <span class="label">Min</span>
+                    </div>
+                    <div class="counter-item">
+                        <span id="seconds" class="number">00</span>
+                        <span class="label">Sec</span>
                     </div>
                 </div>
                 <div class="heart">❤️</div>
@@ -142,6 +169,17 @@
         <div id="modal-view-letter" class="modal">
             <div class="letter-content-detail">
                 <p class="letter-meta"><span id="view-author">Author</span> • <span id="view-date">Date</span></p>
+                <div class="writing-stats" id="writing-stats">
+                    <div class="stat-item">
+                        <strong>Started:</strong> <span id="stat-start">--:--</span>
+                    </div>
+                    <div class="stat-item">
+                        <strong>Sent:</strong> <span id="stat-end">--:--</span>
+                    </div>
+                    <div class="stat-item duration">
+                        <strong>Duration:</strong> <span id="stat-duration">--</span>
+                    </div>
+                </div>
                 <h2 id="view-title">Title</h2>
                 <hr>
                 <div id="view-content" class="scrollable-content">Content</div>

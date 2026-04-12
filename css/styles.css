@@ -114,6 +114,48 @@ nav {
 body.dark-mode .sun-icon { display: none; }
 body.dark-mode .moon-icon { display: block; }
 
+/* Mobile Navigation (Bottom) */
+.mobile-nav {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--glass-bg);
+    backdrop-filter: blur(15px);
+    border-top: 1px solid var(--glass-border);
+    justify-content: space-around;
+    padding: 0.75rem 0;
+    z-index: 1000;
+    box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.05);
+}
+
+.m-nav-link {
+    background: none;
+    border: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: var(--transition);
+    flex: 1;
+}
+
+.m-nav-link.active {
+    color: var(--accent-red);
+}
+
+.nav-icon {
+    font-size: 1.4rem;
+}
+
+.nav-text {
+    font-size: 0.7rem;
+    font-weight: 500;
+}
+
 /* Main Container */
 main {
     padding: var(--padding);
@@ -214,9 +256,9 @@ h1, h2, h3 {
 }
 
 .counter {
-    display: flex;
-    justify-content: center;
-    gap: 2rem;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
     margin-bottom: 3rem;
 }
 
@@ -417,6 +459,34 @@ h1, h2, h3 {
     font-size: 0.9rem;
     color: var(--text-muted);
     margin-bottom: 0.5rem;
+}
+
+.writing-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 0.8rem;
+    background: var(--secondary-bg);
+    padding: 1rem;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    font-size: 0.85rem;
+    border: 1px dashed var(--border-color);
+}
+
+.stat-item strong {
+    color: var(--text-muted);
+    display: block;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.stat-item.duration {
+    background: rgba(255, 77, 77, 0.05);
+    padding: 0.5rem;
+    border-radius: 8px;
+    grid-column: 1 / -1;
+    text-align: center;
 }
 
 .input-label {
@@ -649,6 +719,7 @@ h1, h2, h3 {
         --padding: 1.5rem;
     }
     .hero h1 { font-size: 3rem; }
+    .counter { gap: 1rem; }
 }
 
 /* Standard Mobile (up to 768px) */
@@ -662,42 +733,41 @@ h1, h2, h3 {
         padding: 0 var(--padding);
     }
 
+    .desktop-nav { display: none; }
+    .mobile-nav { display: flex; }
+
+    main {
+        padding-bottom: 100px; /* Room for tab bar */
+    }
+
     .logo { font-size: 1.2rem; }
 
-    nav { gap: 0.25rem; }
-
-    .nav-link {
-        padding: 0.4rem 0.6rem;
-        font-size: 0.85rem;
-    }
+    .header-actions { gap: 0.8rem; }
+    
+    .btn-text { font-size: 0.9rem; }
 
     .hero { padding: 3rem 0; }
     .hero h1 { font-size: 2.2rem; }
     .hero p { font-size: 1rem; margin-bottom: 2rem; }
 
-    /* Compact Counter for Mobile */
+    /* Compact Counter for Mobile - 3 columns, 2 rows */
     .counter {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 1rem;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.8rem;
     }
 
     .counter-item {
         min-width: unset;
-        padding: 1.2rem;
+        padding: 1rem 0.5rem;
     }
 
-    .counter-item:last-child {
-        grid-column: span 2;
-    }
-
-    .counter-item .number { font-size: 2rem; }
-    .counter-item .label { font-size: 0.75rem; }
+    .counter-item .number { font-size: 1.5rem; }
+    .counter-item .label { font-size: 0.65rem; }
 
     /* Better Grid for Photos - 2 columns */
     .grid {
-        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-        gap: 1rem;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.8rem;
     }
 
     /* Modal Tweaks */

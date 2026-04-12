@@ -24,6 +24,7 @@ let appData = {
     notes: []
 };
 let currentAlbumId = null;
+let writingStartTime = null;
 
 // --- DOM Elements (Refreshed in DOMContentLoaded) ---
 let elements = {};
@@ -182,6 +183,15 @@ function renderActiveView() {
     if (activeView === 'view-albums') renderAlbums();
     if (activeView === 'view-album-detail') renderAlbumDetail();
     if (activeView === 'view-letters') renderLetters();
+    
+    // Update both main and mobile navs
+    const viewName = activeView?.replace('view-', '');
+    elements.navLinks.forEach(link => {
+        link.classList.toggle('active', link.id === `nav-${viewName}`);
+    });
+    document.querySelectorAll('.m-nav-link').forEach(link => {
+        link.classList.toggle('active', link.id === `m-nav-${viewName}`);
+    });
 }
 
 // --- Counter Logic ---
@@ -190,6 +200,9 @@ function startCounter() {
     
     function updateCounter() {
         const now = new Date();
+        const diff = now - startDate;
+
+        // Breakdown into units
         let years = now.getFullYear() - startDate.getFullYear();
         let months = now.getMonth() - startDate.getMonth();
         let days = now.getDate() - startDate.getDate();
@@ -204,16 +217,31 @@ function startCounter() {
             months += 12;
         }
 
-        const yEl = document.getElementById('years');
-        const mEl = document.getElementById('months');
-        const dEl = document.getElementById('days');
-        if (yEl) yEl.innerText = years;
-        if (mEl) mEl.innerText = months;
-        if (dEl) dEl.innerText = days;
+        // Time parts
+        const hours = now.getHours();
+        const minutes = now.getMinutes();
+        const seconds = now.getSeconds();
+
+        // Update DOM
+        const els = {
+            years: document.getElementById('years'),
+            months: document.getElementById('months'),
+            days: document.getElementById('days'),
+            hours: document.getElementById('hours'),
+            minutes: document.getElementById('minutes'),
+            seconds: document.getElementById('seconds')
+        };
+
+        if (els.years) els.years.innerText = years;
+        if (els.months) els.months.innerText = months;
+        if (els.days) els.days.innerText = days;
+        if (els.hours) els.hours.innerText = hours.toString().padStart(2, '0');
+        if (els.minutes) els.minutes.innerText = minutes.toString().padStart(2, '0');
+        if (els.seconds) els.seconds.innerText = seconds.toString().padStart(2, '0');
     }
 
     updateCounter();
-    setInterval(updateCounter, 1000 * 60 * 60 * 24);
+    setInterval(updateCounter, 1000); // Update every second
 }
 
 // --- Render Functions (Albums, Letters, etc.) ---
@@ -280,6 +308,24 @@ function openLetterDetail(letter) {
     document.getElementById('view-date').innerText = new Date(letter.created_at).toLocaleDateString();
     document.getElementById('view-title').innerText = letter.title || 'Untitled Letter';
     document.getElementById('view-content').innerText = letter.content;
+    
+    // Stats display
+    const statsContainer = document.getElementById('writing-stats');
+    if (letter.writing_started_at && letter.writing_finished_at) {
+        statsContainer.style.display = 'grid';
+        const start = new Date(letter.writing_started_at);
+        const end = new Date(letter.writing_finished_at);
+        const durationSec = Math.floor((end - start) / 1000);
+        const mins = Math.floor(durationSec / 60);
+        const secs = durationSec % 60;
+        
+        document.getElementById('stat-start').innerText = start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        document.getElementById('stat-end').innerText = end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        document.getElementById('stat-duration').innerText = `${mins}m ${secs}s`;
+    } else {
+        statsContainer.style.display = 'none';
+    }
+    
     openModal('modal-view-letter');
 }
 
@@ -351,6 +397,12 @@ function openModal(modalId) {
         elements.modalContainer.classList.add('active');
     }
     
+    // Start tracking letter writing time
+    if (modalId === 'modal-write-letter') {
+        writingStartTime = new Date().toISOString();
+        console.log('✍️ Started writing at:', writingStartTime);
+    }
+    
     // Hide all modals first
     const allModals = elements.modals || document.querySelectorAll('.modal');
     allModals.forEach(m => m.style.display = 'none');
@@ -388,6 +440,11 @@ function setupEventListeners() {
     document.getElementById('nav-home').onclick = () => showView('view-home');
     document.getElementById('nav-albums').onclick = () => showView('view-albums');
     document.getElementById('nav-letters').onclick = () => showView('view-letters');
+    
+    // Bottom Nav
+    document.getElementById('m-nav-home').onclick = () => showView('view-home');
+    document.getElementById('m-nav-albums').onclick = () => showView('view-albums');
+    document.getElementById('m-nav-letters').onclick = () => showView('view-letters');
     
     // Theme
     if (elements.themeToggle) elements.themeToggle.onclick = toggleTheme;
@@ -461,9 +518,25 @@ function setupEventListeners() {
             const activeToggle = document.querySelector('.author-toggle.active');
             const author = activeToggle ? activeToggle.dataset.author : 'Unknown';
             const content = document.getElementById('input-letter-content').value;
+            const writingFinishedTime = new Date().toISOString();
+            
             if (!author || !content || !title) return;
-            const { error } = await sb.from('notes').insert([{ title, author, content }]);
-            if (!error) { fetchData(); closeModal(); document.getElementById('input-letter-title').value = ''; document.getElementById('input-letter-content').value = ''; }
+            
+            const { error } = await sb.from('notes').insert([{ 
+                title, 
+                author, 
+                content,
+                writing_started_at: writingStartTime,
+                writing_finished_at: writingFinishedTime
+            }]);
+            
+            if (!error) { 
+                fetchData(); 
+                closeModal(); 
+                document.getElementById('input-letter-title').value = ''; 
+                document.getElementById('input-letter-content').value = '';
+                writingStartTime = null; 
+            }
         };
     }
 
