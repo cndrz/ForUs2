@@ -287,6 +287,11 @@ function openPhotoViewer(url, caption) {
     openModal('modal-photo-viewer');
 }
 
+// Expose to window for inline onclick handlers
+window.openPhotoViewer = openPhotoViewer;
+window.deleteAlbum = deleteAlbum;
+window.deletePhoto = deletePhoto;
+
 // --- Deletion Logic ---
 async function deleteAlbum(id) {
     if (!confirm('Are you sure you want to delete this entire album and ALL its photos? This cannot be undone.')) return;
