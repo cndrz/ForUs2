@@ -222,13 +222,17 @@ function renderAlbums() {
     if (!grid) return;
     grid.innerHTML = '';
     appData.albums.forEach(album => {
+        // Use the first photo as the thumbnail if available
+        const firstPhoto = album.photos && album.photos.length > 0 ? album.photos[0] : null;
+        const thumbnail = firstPhoto ? firstPhoto.url : (album.cover_url || '/placeholder-album.jpg');
+
         const card = document.createElement('div');
         card.className = 'album-card';
         card.innerHTML = `
             <div class="card-actions">
                 <button class="delete-btn" onclick="event.stopPropagation(); deleteAlbum('${album.id}')">🗑️</button>
             </div>
-            <div class="album-cover" style="background-image: url('${album.cover_url || '/placeholder-album.jpg'}')"></div>
+            <div class="album-cover" style="background-image: url('${thumbnail}')"></div>
             <div class="album-info">
                 <h3>${album.name}</h3>
                 <p>${album.photos ? album.photos.length : 0} photos</p>
