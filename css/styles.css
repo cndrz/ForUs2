@@ -52,60 +52,80 @@ body {
     overflow-x: hidden;
 }
 
-header {
-    height: var(--nav-height);
-    padding: 0 var(--padding);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    position: sticky;
-    top: 0;
-    background: var(--glass-bg);
-    backdrop-filter: blur(10px);
-    z-index: 100;
-    border-bottom: 1px solid var(--glass-border);
-}
-
-.header-actions {
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-}
-
-.logo {
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: var(--accent-red);
-}
-
-nav {
-    display: flex;
-    gap: 1.5rem;
-}
-
-.nav-link {
-    background: none;
-    border: none;
-    font-family: inherit;
-    font-size: 1rem;
-    color: var(--text-muted);
-    cursor: pointer;
-    transition: var(--transition);
-    padding: 0.5rem 1rem;
-    border-radius: 20px;
-}
-
-.nav-link:hover, .nav-link.active {
-    color: var(--accent-red);
-    background: rgba(255, 77, 77, 0.1);
-}
-
 .icon-btn {
     background: none;
     border: none;
     font-size: 1.5rem;
     cursor: pointer;
     transition: var(--transition);
+}
+
+.glass-btn {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: var(--shadow);
+}
+
+/* Floating Actions */
+.floating-actions {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+}
+
+/* Bottom Navigation (Universal) */
+.bottom-nav {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 500px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    display: flex;
+    justify-content: space-around;
+    padding: 0.8rem 0;
+    z-index: 1000;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    border-radius: 30px;
+}
+
+.nav-link {
+    background: none;
+    border: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: var(--transition);
+    flex: 1;
+}
+
+.nav-link.active {
+    color: var(--accent-red);
+}
+
+.nav-icon {
+    font-size: 1.3rem;
+}
+
+.nav-text {
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 /* Dark Mode Toggle Icons */
@@ -258,8 +278,9 @@ h1, h2, h3 {
 .counter {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 1.5rem;
-    margin-bottom: 3rem;
+    gap: 1rem;
+    margin: 0 auto 3rem auto;
+    max-width: 600px;
 }
 
 .counter-item {
@@ -267,22 +288,22 @@ h1, h2, h3 {
     flex-direction: column;
     align-items: center;
     background: var(--card-bg);
-    padding: 2rem;
+    padding: 1rem;
     border-radius: var(--border-radius);
-    min-width: 140px;
+    min-width: 100px;
     box-shadow: var(--shadow);
     border: 1px solid var(--glass-border);
     backdrop-filter: blur(5px);
 }
 
 .counter-item .number {
-    font-size: 3rem;
+    font-size: 1.8rem;
     font-weight: 600;
     color: var(--accent-red);
 }
 
 .counter-item .label {
-    font-size: 0.9rem;
+    font-size: 0.7rem;
     text-transform: uppercase;
     letter-spacing: 1px;
     color: var(--text-muted);
@@ -719,50 +740,34 @@ h1, h2, h3 {
         --padding: 1.5rem;
     }
     .hero h1 { font-size: 3rem; }
-    .counter { gap: 1rem; }
 }
 
 /* Standard Mobile (up to 768px) */
 @media (max-width: 768px) {
     :root {
         --padding: 1.25rem;
-        --nav-height: 70px;
     }
-
-    header {
-        padding: 0 var(--padding);
-    }
-
-    .desktop-nav { display: none; }
-    .mobile-nav { display: flex; }
 
     main {
         padding-bottom: 100px; /* Room for tab bar */
     }
 
-    .logo { font-size: 1.2rem; }
-
-    .header-actions { gap: 0.8rem; }
-    
-    .btn-text { font-size: 0.9rem; }
-
     .hero { padding: 3rem 0; }
     .hero h1 { font-size: 2.2rem; }
     .hero p { font-size: 1rem; margin-bottom: 2rem; }
 
-    /* Compact Counter for Mobile - 3 columns, 2 rows */
+    /* Narrow Counter for Mobile */
     .counter {
         grid-template-columns: repeat(3, 1fr);
-        gap: 0.8rem;
+        gap: 0.5rem;
     }
 
     .counter-item {
-        min-width: unset;
-        padding: 1rem 0.5rem;
+        padding: 0.8rem 0.2rem;
     }
 
-    .counter-item .number { font-size: 1.5rem; }
-    .counter-item .label { font-size: 0.65rem; }
+    .counter-item .number { font-size: 1.4rem; }
+    .counter-item .label { font-size: 0.6rem; }
 
     /* Better Grid for Photos - 2 columns */
     .grid {

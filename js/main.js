@@ -36,8 +36,8 @@ function refreshElements() {
         themeToggle: document.getElementById('theme-toggle'),
         modalContainer: document.getElementById('modal-container'),
         modals: document.querySelectorAll('.modal'),
-        header: document.getElementById('header-main'),
-        mobileNav: document.getElementById('mobile-nav'),
+        bottomNav: document.getElementById('bottom-nav'),
+        floatingActions: document.getElementById('floating-actions'),
         loginError: document.getElementById('login-error')
     };
     console.log('✅ DOM Elements cached');
@@ -74,17 +74,17 @@ async function checkUser() {
 }
 
 function handleAuthState(user) {
-    if (!elements.header) refreshElements();
+    if (!elements.bottomNav) refreshElements();
     
     if (user) {
-        if (elements.header) elements.header.style.display = 'flex';
-        if (elements.mobileNav) elements.mobileNav.style.display = 'flex';
+        if (elements.bottomNav) elements.bottomNav.style.display = 'flex';
+        if (elements.floatingActions) elements.floatingActions.style.display = 'flex';
         showView('view-home');
         fetchData();
         startCounter();
     } else {
-        if (elements.header) elements.header.style.display = 'none';
-        if (elements.mobileNav) elements.mobileNav.style.display = 'none';
+        if (elements.bottomNav) elements.bottomNav.style.display = 'none';
+        if (elements.floatingActions) elements.floatingActions.style.display = 'none';
         showView('view-login');
     }
 }
@@ -187,13 +187,10 @@ function renderActiveView() {
     if (activeView === 'view-album-detail') renderAlbumDetail();
     if (activeView === 'view-letters') renderLetters();
     
-    // Update both main and mobile navs
+    // Update navigation active state
     const viewName = activeView?.replace('view-', '');
     elements.navLinks.forEach(link => {
         link.classList.toggle('active', link.id === `nav-${viewName}`);
-    });
-    document.querySelectorAll('.m-nav-link').forEach(link => {
-        link.classList.toggle('active', link.id === `m-nav-${viewName}`);
     });
 }
 
@@ -443,12 +440,7 @@ function setupEventListeners() {
     document.getElementById('nav-home').onclick = () => showView('view-home');
     document.getElementById('nav-albums').onclick = () => showView('view-albums');
     document.getElementById('nav-letters').onclick = () => showView('view-letters');
-    
-    // Bottom Nav
-    document.getElementById('m-nav-home').onclick = () => showView('view-home');
-    document.getElementById('m-nav-albums').onclick = () => showView('view-albums');
-    document.getElementById('m-nav-letters').onclick = () => showView('view-letters');
-    document.getElementById('m-nav-logout').onclick = logout;
+    document.getElementById('nav-logout').onclick = logout;
     
     // Theme
     if (elements.themeToggle) elements.themeToggle.onclick = toggleTheme;
