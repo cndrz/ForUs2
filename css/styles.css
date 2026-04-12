@@ -641,31 +641,121 @@ h1, h2, h3 {
     margin-top: 1rem;
 }
 
-/* Responsive */
+/* --- Responsive Enhancements --- */
+
+/* Tablet & Large Mobile (up to 1024px) */
+@media (max-width: 1024px) {
+    :root {
+        --padding: 1.5rem;
+    }
+    .hero h1 { font-size: 3rem; }
+}
+
+/* Standard Mobile (up to 768px) */
 @media (max-width: 768px) {
     :root {
-        --padding: 1rem;
+        --padding: 1.25rem;
+        --nav-height: 70px;
     }
-    
-    .hero h1 { font-size: 2.5rem; }
-    
+
+    header {
+        padding: 0 var(--padding);
+    }
+
+    .logo { font-size: 1.2rem; }
+
+    nav { gap: 0.25rem; }
+
+    .nav-link {
+        padding: 0.4rem 0.6rem;
+        font-size: 0.85rem;
+    }
+
+    .hero { padding: 3rem 0; }
+    .hero h1 { font-size: 2.2rem; }
+    .hero p { font-size: 1rem; margin-bottom: 2rem; }
+
+    /* Compact Counter for Mobile */
     .counter {
-        flex-direction: column;
-        align-items: center;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
         gap: 1rem;
     }
-    
+
     .counter-item {
-        width: 100%;
+        min-width: unset;
+        padding: 1.2rem;
+    }
+
+    .counter-item:last-child {
+        grid-column: span 2;
+    }
+
+    .counter-item .number { font-size: 2rem; }
+    .counter-item .label { font-size: 0.75rem; }
+
+    /* Better Grid for Photos - 2 columns */
+    .grid {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 1rem;
+    }
+
+    /* Modal Tweaks */
+    .modal {
         padding: 1.5rem;
+        width: 95%;
+        border-radius: 20px;
     }
-    
-    nav {
-        gap: 0.5rem;
+
+    .login-card {
+        padding: 2rem 1.5rem;
+        border-radius: 24px;
     }
+
+    .login-card h1 { font-size: 1.8rem; }
+}
+
+/* Very Small Mobile (up to 400px) */
+@media (max-width: 400px) {
+    :root {
+        --padding: 1rem;
+        --nav-height: 60px;
+    }
+
+    .logo { font-size: 1rem; }
     
     .nav-link {
+        padding: 0.3rem 0.5rem;
+        font-size: 0.8rem;
+    }
+
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .section-header h2 { font-size: 1.4rem; }
+    .section-header .btn { width: 100%; }
+
+    .letter-card {
+        padding: 1.2rem;
+    }
+
+    .letter-header {
+        flex-direction: column;
+        gap: 0.2rem;
+    }
+}
+
+/* Specific fix for Photo Viewer on narrow screens */
+@media (max-width: 600px) {
+    #modal-photo-viewer .modal {
         padding: 0.5rem;
-        font-size: 0.9rem;
+    }
+    
+    #modal-photo-viewer .viewer-caption {
+        font-size: 1rem;
+        width: 90%;
     }
 }
