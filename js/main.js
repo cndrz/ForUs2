@@ -37,6 +37,7 @@ function refreshElements() {
         modalContainer: document.getElementById('modal-container'),
         modals: document.querySelectorAll('.modal'),
         header: document.getElementById('header-main'),
+        mobileNav: document.getElementById('mobile-nav'),
         loginError: document.getElementById('login-error')
     };
     console.log('✅ DOM Elements cached');
@@ -77,11 +78,13 @@ function handleAuthState(user) {
     
     if (user) {
         if (elements.header) elements.header.style.display = 'flex';
+        if (elements.mobileNav) elements.mobileNav.style.display = 'flex';
         showView('view-home');
         fetchData();
         startCounter();
     } else {
         if (elements.header) elements.header.style.display = 'none';
+        if (elements.mobileNav) elements.mobileNav.style.display = 'none';
         showView('view-login');
     }
 }
@@ -445,6 +448,7 @@ function setupEventListeners() {
     document.getElementById('m-nav-home').onclick = () => showView('view-home');
     document.getElementById('m-nav-albums').onclick = () => showView('view-albums');
     document.getElementById('m-nav-letters').onclick = () => showView('view-letters');
+    document.getElementById('m-nav-logout').onclick = logout;
     
     // Theme
     if (elements.themeToggle) elements.themeToggle.onclick = toggleTheme;
