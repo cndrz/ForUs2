@@ -780,6 +780,41 @@ h1, h2, h3 {
     flex-direction: column;
     align-items: center;
     gap: 1.5rem;
+    position: relative;
+}
+
+.photo-nav-btn {
+    position: absolute;
+    top: 45%;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(5px);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    width: 45px;
+    height: 45px;
+    font-size: 1.5rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    transition: var(--transition);
+}
+
+.photo-nav-btn:hover {
+    background: var(--accent-red);
+    border-color: var(--accent-red);
+    transform: translateY(-50%) scale(1.1);
+}
+
+#btn-prev-photo { left: -10px; }
+#btn-next-photo { right: -10px; }
+
+@media (min-width: 768px) {
+    #btn-prev-photo { left: -50px; }
+    #btn-next-photo { right: -50px; }
 }
 
 #modal-photo-viewer img {

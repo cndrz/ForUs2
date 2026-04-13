@@ -281,7 +281,8 @@ function renderAlbumDetail() {
     if (!album || !grid) return;
     document.getElementById('current-album-title').innerText = album.name;
     grid.innerHTML = '';
-    (album.photos || []).forEach(photo => {
+    currentAlbumPhotos = album.photos || [];
+    currentAlbumPhotos.forEach((photo, index) => {
         const card = document.createElement('div');
         card.className = 'photo-card';
         card.innerHTML = `
@@ -289,7 +290,7 @@ function renderAlbumDetail() {
                 <button class="delete-btn" onclick="event.stopPropagation(); deletePhoto('${photo.id}', '${photo.url}')">🗑️</button>
             </div>
             <img src="${photo.url}" class="photo-img">`;
-        card.onclick = () => openPhotoViewer(photo.url, photo.caption);
+        card.onclick = () => openPhotoViewer(index);
         grid.appendChild(card);
     });
 }
@@ -333,16 +334,31 @@ function openLetterDetail(letter) {
     openModal('modal-view-letter');
 }
 
-function openPhotoViewer(url, caption) {
+let currentPhotoIndex = 0;
+let currentAlbumPhotos = [];
+
+function openPhotoViewer(index) {
+    if (index < 0 || index >= currentAlbumPhotos.length) return;
+    currentPhotoIndex = index;
+    const photo = currentAlbumPhotos[index];
+    
     const img = document.getElementById('viewer-img');
     const cap = document.getElementById('viewer-caption');
-    if (img) img.src = url;
-    if (cap) cap.innerText = caption || '';
+    if (img) img.src = photo.url;
+    if (cap) cap.innerText = photo.caption || '';
+    
+    const prevBtn = document.getElementById('btn-prev-photo');
+    const nextBtn = document.getElementById('btn-next-photo');
+    if (prevBtn) prevBtn.style.display = index > 0 ? 'flex' : 'none';
+    if (nextBtn) nextBtn.style.display = index < (currentAlbumPhotos.length - 1) ? 'flex' : 'none';
+    
     openModal('modal-photo-viewer');
 }
 
 // Expose to window for inline onclick handlers
 window.openPhotoViewer = openPhotoViewer;
+window.nextPhoto = () => openPhotoViewer(currentPhotoIndex + 1);
+window.prevPhoto = () => openPhotoViewer(currentPhotoIndex - 1);
 window.deleteAlbum = deleteAlbum;
 window.deletePhoto = deletePhoto;
 
