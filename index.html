@@ -32,6 +32,10 @@
             <span class="nav-icon">💌</span>
             <span class="nav-text">Letters</span>
         </button>
+        <button id="nav-flashcards" class="nav-link">
+            <span class="nav-icon">🃏</span>
+            <span class="nav-text">Play</span>
+        </button>
         <button id="nav-logout" class="nav-link">
             <span class="nav-icon">🚪</span>
             <span class="nav-text">Logout</span>
@@ -113,6 +117,39 @@
                 <button id="btn-write-letter" class="btn primary">Write a Note</button>
             </div>
             <div id="letters-list" class="list"></div>
+        </section>
+
+        <!-- Flashcards Section -->
+        <section id="view-flashcards" class="view">
+            <div class="section-header">
+                <h2>Flashcards</h2>
+            </div>
+            <p style="text-align: center; color: var(--text-muted); margin-bottom: 2rem;">Pick a topic below to generate questions!</p>
+            
+            <div class="category-pills">
+                <button class="pill active" data-category="Deep & Intimate">Deep & Intimate</button>
+                <button class="pill" data-category="Funny & Random">Funny</button>
+                <button class="pill" data-category="Future Plans">Future</button>
+                <button class="pill" data-category="Our Memories">Memories</button>
+                <button class="pill" data-category="Spicy">Spicy</button>
+            </div>
+
+            <div class="flashcard-container">
+                <div class="flashcard" id="flashcard-inner">
+                    <div class="flashcard-front">
+                        <div class="card-logo">🃏</div>
+                        <h3 id="flashcard-category-display">Deep & Intimate</h3>
+                        <p class="tap-hint">Tap to Flip</p>
+                    </div>
+                    <div class="flashcard-back">
+                        <p id="flashcard-text">Generating...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flashcard-actions">
+                <button id="btn-next-flashcard" class="btn primary btn-large">Generate Next Question</button>
+            </div>
         </section>
     </main>
 

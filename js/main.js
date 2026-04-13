@@ -7,6 +7,9 @@ import { createClient } from '@supabase/supabase-js';
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
+// --- AI Configuration ---
+const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+
 let sb = null;
 try {
     if (SUPABASE_URL && SUPABASE_URL !== 'YOUR_SUPABASE_URL') {
@@ -417,6 +420,63 @@ async function deletePhoto(id, url) {
     });
 }
 
+// --- Flashcards Logic ---
+let activeFlashcardCategory = 'Deep & Intimate';
+
+async function generateFlashcard() {
+    const flashcardInner = document.getElementById('flashcard-inner');
+    const flashcardText = document.getElementById('flashcard-text');
+    const btnNext = document.getElementById('btn-next-flashcard');
+    
+    // Reset state & Disable button
+    flashcardInner.classList.remove('is-flipped');
+    btnNext.disabled = true;
+    btnNext.innerText = 'Thinking...';
+    
+    // Allow animation to flip back before generating (so user sees front side briefly)
+    await new Promise(r => setTimeout(r, 400));
+    
+    if (!GEMINI_API_KEY) {
+        flashcardText.innerText = "Error: VITE_GEMINI_API_KEY not found. Please add it to your environment variables.";
+        flashcardInner.classList.add('is-flipped');
+        btnNext.disabled = false;
+        btnNext.innerText = 'Generate Next Question';
+        return;
+    }
+    
+    try {
+        const prompt = `You are an AI generating fun, engaging, and meaningful flashcard questions for couples.
+Generate exactly ONE short and interesting question (max 2 sentences) for the category: "${activeFlashcardCategory}".
+The question should be directly addressed to the partner. Only return the question text without quotes or preamble. Make sure it feels natural.`;
+
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: [{ parts: [{ text: prompt }] }],
+                generationConfig: { temperature: 0.9, maxOutputTokens: 100 }
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.error) throw new Error(data.error.message);
+        
+        let aiText = data.candidates[0].content.parts[0].text.trim();
+        // Remove trailing/leading quotes if any
+        aiText = aiText.replace(/^["']|["']$/g, '');
+        
+        flashcardText.innerText = aiText;
+    } catch (e) {
+        console.error('Gemini Error:', e);
+        flashcardText.innerText = "Oops, failed to generate a question! Let's try again.";
+    } finally {
+        flashcardInner.classList.add('is-flipped');
+        btnNext.disabled = false;
+        btnNext.innerText = 'Generate Next Question';
+    }
+}
+
 // --- Modal Logic ---
 function openModal(modalId) {
     if (elements.modalContainer) {
@@ -466,6 +526,7 @@ function setupEventListeners() {
     document.getElementById('nav-home').onclick = () => showView('view-home');
     document.getElementById('nav-albums').onclick = () => showView('view-albums');
     document.getElementById('nav-letters').onclick = () => showView('view-letters');
+    document.getElementById('nav-flashcards').onclick = () => showView('view-flashcards');
     document.getElementById('nav-logout').onclick = logout;
 
     // Theme
@@ -560,6 +621,37 @@ function setupEventListeners() {
                 writingStartTime = null;
             }
         };
+    }
+
+    // Flashcard Actions
+    document.querySelectorAll('.flashcard-container').forEach(container => {
+        container.onclick = () => {
+            const inner = document.getElementById('flashcard-inner');
+            if (inner) inner.classList.toggle('is-flipped');
+        };
+    });
+    
+    document.querySelectorAll('.category-pills .pill').forEach(pill => {
+        pill.onclick = (e) => {
+            document.querySelectorAll('.category-pills .pill').forEach(p => p.classList.remove('active'));
+            e.target.classList.add('active');
+            activeFlashcardCategory = e.target.dataset.category;
+            
+            const displayObj = document.getElementById('flashcard-category-display');
+            if (displayObj) displayObj.innerText = activeFlashcardCategory;
+            
+            // Reset card visually when switching categories
+            const flashcardInner = document.getElementById('flashcard-inner');
+            if (flashcardInner) flashcardInner.classList.remove('is-flipped');
+            
+            const pText = document.getElementById('flashcard-text');
+            if (pText) pText.innerText = "Tap 'Generate' to load question!";
+        };
+    });
+
+    const nextFlashcardBtn = document.getElementById('btn-next-flashcard');
+    if (nextFlashcardBtn) {
+        nextFlashcardBtn.onclick = generateFlashcard;
     }
 
     // Close Modals
