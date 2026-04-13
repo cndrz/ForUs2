@@ -283,8 +283,7 @@ function renderAlbumDetail() {
             <div class="card-actions">
                 <button class="delete-btn" onclick="event.stopPropagation(); deletePhoto('${photo.id}', '${photo.url}')">🗑️</button>
             </div>
-            <img src="${photo.url}" class="photo-img">
-            <div class="photo-caption">${photo.caption}</div>`;
+            <img src="${photo.url}" class="photo-img">`;
         card.onclick = () => openPhotoViewer(photo.url, photo.caption);
         grid.appendChild(card);
     });
