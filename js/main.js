@@ -427,15 +427,15 @@ async function generateFlashcard() {
     const flashcardInner = document.getElementById('flashcard-inner');
     const flashcardText = document.getElementById('flashcard-text');
     const btnNext = document.getElementById('btn-next-flashcard');
-    
+
     // Reset state & Disable button
     flashcardInner.classList.remove('is-flipped');
     btnNext.disabled = true;
     btnNext.innerText = 'Thinking...';
-    
+
     // Allow animation to flip back before generating (so user sees front side briefly)
     await new Promise(r => setTimeout(r, 400));
-    
+
     if (!HF_API_KEY) {
         flashcardText.innerText = "Error: VITE_HF_API_KEY not found. Please add it to your environment variables.";
         flashcardInner.classList.add('is-flipped');
@@ -443,46 +443,46 @@ async function generateFlashcard() {
         btnNext.innerText = 'Generate Next Question';
         return;
     }
-    
+
     try {
         const response = await fetch(`/proxy-hf/v1/chat/completions`, {
             method: 'POST',
-            headers: { 
+            headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${HF_API_KEY}`
             },
             body: JSON.stringify({
-                model: "mistralai/Mistral-7B-Instruct-v0.3",
+                model: "mistralai/Mistral-7B-Instruct-v0.2",
                 messages: [
-                    { 
-                        role: "system", 
-                        content: "You are an AI generating fun, engaging, and meaningful flashcard questions for couples. Generate exactly ONE short and interesting question (max 2 sentences). The question should be directly addressed to the partner. Only return the actual question text without any quotes, lists, or preamble." 
+                    {
+                        role: "system",
+                        content: "You are an AI generating fun, engaging, and meaningful flashcard questions for couples. Generate exactly ONE short and interesting question (max 2 sentences). The question should be directly addressed to the partner. Only return the actual question text without any quotes, lists, or preamble."
                     },
-                    { 
-                        role: "user", 
-                        content: `Generate a question for the category: "${activeFlashcardCategory}"` 
+                    {
+                        role: "user",
+                        content: `Generate a question for the category: "${activeFlashcardCategory}"`
                     }
                 ],
                 temperature: 0.9,
                 max_tokens: 100
             })
         });
-        
+
         let data;
         const rawText = await response.text();
         try {
             data = JSON.parse(rawText);
-        } catch(e) {
+        } catch (e) {
             throw new Error(`The model you requested might not exist or is gated. Raw HF Response: ${rawText.substring(0, 100)}...`);
         }
-        
+
         if (!response.ok) throw new Error(data.error?.message || data.error || `HTTP ${response.status}`);
         if (!data.choices || !data.choices[0]) throw new Error("Invalid response format from logic router");
-        
+
         let aiText = data.choices[0].message.content.trim();
         // Remove trailing/leading quotes if any
         aiText = aiText.replace(/^["']|["']$/g, '');
-        
+
         flashcardText.innerText = aiText;
     } catch (e) {
         console.error('Hugging Face Error:', e);
@@ -647,20 +647,20 @@ function setupEventListeners() {
             if (inner) inner.classList.toggle('is-flipped');
         };
     });
-    
+
     document.querySelectorAll('.category-pills .pill').forEach(pill => {
         pill.onclick = (e) => {
             document.querySelectorAll('.category-pills .pill').forEach(p => p.classList.remove('active'));
             e.target.classList.add('active');
             activeFlashcardCategory = e.target.dataset.category;
-            
+
             const displayObj = document.getElementById('flashcard-category-display');
             if (displayObj) displayObj.innerText = activeFlashcardCategory;
-            
+
             // Reset card visually when switching categories
             const flashcardInner = document.getElementById('flashcard-inner');
             if (flashcardInner) flashcardInner.classList.remove('is-flipped');
-            
+
             const pText = document.getElementById('flashcard-text');
             if (pText) pText.innerText = "Tap 'Generate' to load question!";
         };
