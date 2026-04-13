@@ -3,10 +3,10 @@ import { defineConfig } from 'vite';
 export default defineConfig({
   server: {
     proxy: {
-      '/proxy-hf': {
-        target: 'https://api-inference.huggingface.co',
+      '/proxy-groq': {
+        target: 'https://api.groq.com/openai',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/proxy-hf/, '')
+        rewrite: (path) => path.replace(/^\/proxy-groq/, '')
       }
     }
   }

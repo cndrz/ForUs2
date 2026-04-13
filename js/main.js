@@ -8,7 +8,7 @@ const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 // --- AI Configuration ---
-const HF_API_KEY = import.meta.env.VITE_HF_API_KEY;
+const GROQ_API_KEY = import.meta.env.VITE_GROQ_API_KEY;
 
 let sb = null;
 try {
@@ -436,8 +436,8 @@ async function generateFlashcard() {
     // Allow animation to flip back before generating (so user sees front side briefly)
     await new Promise(r => setTimeout(r, 400));
 
-    if (!HF_API_KEY) {
-        flashcardText.innerText = "Error: VITE_HF_API_KEY not found. Please add it to your environment variables.";
+    if (!GROQ_API_KEY) {
+        flashcardText.innerText = "Error: VITE_GROQ_API_KEY not found. Please add it to your environment variables.";
         flashcardInner.classList.add('is-flipped');
         btnNext.disabled = false;
         btnNext.innerText = 'Generate Next Question';
@@ -445,14 +445,14 @@ async function generateFlashcard() {
     }
 
     try {
-        const response = await fetch(`/proxy-hf/v1/chat/completions`, {
+        const response = await fetch(`/proxy-groq/v1/chat/completions`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${HF_API_KEY}`
+                'Authorization': `Bearer ${GROQ_API_KEY}`
             },
             body: JSON.stringify({
-                model: "mistralai/Mistral-7B-Instruct-v0.2",
+                model: "llama3-8b-8192",
                 messages: [
                     {
                         role: "system",
@@ -473,7 +473,7 @@ async function generateFlashcard() {
         try {
             data = JSON.parse(rawText);
         } catch (e) {
-            throw new Error(`The model you requested might not exist or is gated. Raw HF Response: ${rawText.substring(0, 100)}...`);
+            throw new Error(`Groq API failure. Raw Response: ${rawText.substring(0, 100)}...`);
         }
 
         if (!response.ok) throw new Error(data.error?.message || data.error || `HTTP ${response.status}`);
@@ -485,7 +485,7 @@ async function generateFlashcard() {
 
         flashcardText.innerText = aiText;
     } catch (e) {
-        console.error('Hugging Face Error:', e);
+        console.error('Groq Error:', e);
         flashcardText.innerText = "Oops, failed to generate a question! Let's try again.";
     } finally {
         flashcardInner.classList.add('is-flipped');

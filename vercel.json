@@ -1,8 +1,8 @@
 {
   "rewrites": [
     {
-      "source": "/proxy-hf/:path*",
-      "destination": "https://api-inference.huggingface.co/:path*"
+      "source": "/proxy-groq/:path*",
+      "destination": "https://api.groq.com/openai/:path*"
     }
   ]
 }
