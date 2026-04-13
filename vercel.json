@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/proxy-hf/:path*",
+      "destination": "https://api-inference.huggingface.co/:path*"
+    }
+  ]
+}
