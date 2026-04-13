@@ -452,7 +452,7 @@ async function generateFlashcard() {
                 'Authorization': `Bearer ${HF_API_KEY}`
             },
             body: JSON.stringify({
-                model: "meta-llama/Meta-Llama-3-8B-Instruct",
+                model: "mistralai/Mistral-7B-Instruct-v0.3",
                 messages: [
                     { 
                         role: "system", 
