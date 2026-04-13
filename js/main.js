@@ -452,7 +452,7 @@ async function generateFlashcard() {
                 'Authorization': `Bearer ${HF_API_KEY}`
             },
             body: JSON.stringify({
-                model: "meta-llama/Meta-Llama-4-8B-Instruct",
+                model: "meta-llama/Meta-Llama-3-8B-Instruct",
                 messages: [
                     { 
                         role: "system", 
@@ -468,10 +468,16 @@ async function generateFlashcard() {
             })
         });
         
-        const data = await response.json();
+        let data;
+        const rawText = await response.text();
+        try {
+            data = JSON.parse(rawText);
+        } catch(e) {
+            throw new Error(`The model you requested might not exist or is gated. Raw HF Response: ${rawText.substring(0, 100)}...`);
+        }
         
-        if (data.error) throw new Error(data.error.message || data.error);
-        if (!data.choices || !data.choices[0]) throw new Error("Invalid response format");
+        if (!response.ok) throw new Error(data.error?.message || data.error || `HTTP ${response.status}`);
+        if (!data.choices || !data.choices[0]) throw new Error("Invalid response format from logic router");
         
         let aiText = data.choices[0].message.content.trim();
         // Remove trailing/leading quotes if any
