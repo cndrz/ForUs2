@@ -445,7 +445,7 @@ async function generateFlashcard() {
     }
     
     try {
-        const response = await fetch(`https://api-inference.huggingface.co/models/meta-llama/Meta-Llama-4-8B-Instruct/v1/chat/completions`, {
+        const response = await fetch(`https://api-inference.huggingface.co/v1/chat/completions`, {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json',
