@@ -1,6 +1,6 @@
- /**
- * ForUs - Main Application Logic (Supabase Version - Debug Mode)
- */
+/**
+* ForUs - Main Application Logic (Supabase Version - Debug Mode)
+*/
 import { createClient } from '@supabase/supabase-js';
 
 // --- Supabase Configuration ---
@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
     refreshElements();
     initTheme();
     setupEventListeners();
-    
+
     if (sb) {
         checkUser();
     } else {
@@ -75,7 +75,7 @@ async function checkUser() {
 
 function handleAuthState(user) {
     if (!elements.bottomNav) refreshElements();
-    
+
     if (user) {
         if (elements.bottomNav) elements.bottomNav.style.display = 'flex';
         if (elements.floatingActions) elements.floatingActions.style.display = 'flex';
@@ -103,7 +103,7 @@ async function login() {
     try {
         console.log('📡 Sending request to Supabase...');
         const { error } = await sb.auth.signInWithPassword({ email, password });
-        
+
         if (error) {
             console.error('❌ Login failed:', error.message);
             if (errorEl) {
@@ -120,7 +120,9 @@ async function login() {
 }
 
 async function logout() {
-    await sb.auth.signOut();
+    showConfirm('Logout', 'Are you sure you want to log out love?', async () => {
+        await sb.auth.signOut();
+    });
 }
 
 // --- Theme Management ---
@@ -163,7 +165,7 @@ async function fetchData() {
 // --- View Navigation ---
 function showView(viewId) {
     if (!elements.views) refreshElements();
-    
+
     console.log('🖼️ Switching to view:', viewId);
     elements.views.forEach(v => v.classList.remove('active'));
     const view = document.getElementById(viewId);
@@ -172,7 +174,7 @@ function showView(viewId) {
     } else {
         console.error('❌ View not found:', viewId);
     }
-    
+
     // Update Nav active state
     elements.navLinks.forEach(link => {
         link.classList.toggle('active', link.id === `nav-${viewId.replace('view-', '')}`);
@@ -186,7 +188,7 @@ function renderActiveView() {
     if (activeView === 'view-albums') renderAlbums();
     if (activeView === 'view-album-detail') renderAlbumDetail();
     if (activeView === 'view-letters') renderLetters();
-    
+
     // Update navigation active state
     const viewName = activeView?.replace('view-', '');
     elements.navLinks.forEach(link => {
@@ -197,7 +199,7 @@ function renderActiveView() {
 // --- Counter Logic ---
 function startCounter() {
     const startDate = new Date(appData.startDate);
-    
+
     function updateCounter() {
         const now = new Date();
         const diff = now - startDate;
@@ -307,7 +309,7 @@ function openLetterDetail(letter) {
     document.getElementById('view-date').innerText = new Date(letter.created_at).toLocaleDateString();
     document.getElementById('view-title').innerText = letter.title || 'Untitled Letter';
     document.getElementById('view-content').innerText = letter.content;
-    
+
     // Stats display
     const statsContainer = document.getElementById('writing-stats');
     if (letter.writing_started_at && letter.writing_finished_at) {
@@ -317,14 +319,14 @@ function openLetterDetail(letter) {
         const durationSec = Math.floor((end - start) / 1000);
         const mins = Math.floor(durationSec / 60);
         const secs = durationSec % 60;
-        
+
         document.getElementById('stat-start').innerText = start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         document.getElementById('stat-end').innerText = end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         document.getElementById('stat-duration').innerText = `${mins}m ${secs}s`;
     } else {
         statsContainer.style.display = 'none';
     }
-    
+
     openModal('modal-view-letter');
 }
 
@@ -341,53 +343,78 @@ window.openPhotoViewer = openPhotoViewer;
 window.deleteAlbum = deleteAlbum;
 window.deletePhoto = deletePhoto;
 
+// --- Custom Dialog Logic ---
+let pendingConfirmAction = null;
+
+function showConfirm(title, message, onConfirm) {
+    document.getElementById('confirm-title').innerText = title;
+    document.getElementById('confirm-message').innerText = message;
+
+    // Set the action callback
+    pendingConfirmAction = onConfirm;
+
+    // Clean up any old event listener to prevent multiple triggers
+    const confirmBtn = document.getElementById('btn-confirm-action');
+    confirmBtn.onclick = () => {
+        if (pendingConfirmAction) pendingConfirmAction();
+        closeModal();
+    };
+
+    openModal('modal-confirm');
+}
+
+function showAlert(title, message) {
+    document.getElementById('alert-title').innerText = title;
+    document.getElementById('alert-message').innerText = message;
+    openModal('modal-alert');
+}
+
 // --- Deletion Logic ---
 async function deleteAlbum(id) {
-    if (!confirm('Are you sure you want to delete this entire album and ALL its photos? This cannot be undone.')) return;
-    
-    try {
-        const album = appData.albums.find(a => a.id === id);
-        if (album && album.photos) {
-            // 1. Delete files from storage
-            const fileNames = album.photos.map(p => p.url.split('/').pop());
-            if (fileNames.length > 0) {
-                await sb.storage.from('photos').remove(fileNames);
+    showConfirm('Delete Album', 'Are you sure you want to delete this entire album and ALL its photos? This cannot be undone.', async () => {
+        try {
+            const album = appData.albums.find(a => a.id === id);
+            if (album && album.photos) {
+                // 1. Delete files from storage
+                const fileNames = album.photos.map(p => p.url.split('/').pop());
+                if (fileNames.length > 0) {
+                    await sb.storage.from('photos').remove(fileNames);
+                }
             }
+
+            // 2. Delete album from DB
+            await sb.from('photos').delete().eq('album_id', id);
+            const { error } = await sb.from('albums').delete().eq('id', id);
+
+            if (error) throw error;
+
+            fetchData();
+            if (currentAlbumId === id) showView('view-albums');
+        } catch (e) {
+            console.error('Error deleting album:', e);
+            showAlert('Deletion Failed', 'Failed to delete album: ' + e.message);
         }
-        
-        // 2. Delete album from DB (cascade should handle photos table if set up, but let's be safe)
-        // If cascade is not set up, we'd delete photos first. Assuming standard setup or manual cleanup.
-        await sb.from('photos').delete().eq('album_id', id);
-        const { error } = await sb.from('albums').delete().eq('id', id);
-        
-        if (error) throw error;
-        
-        fetchData();
-        if (currentAlbumId === id) showView('view-albums');
-    } catch (e) {
-        console.error('Error deleting album:', e);
-        alert('Failed to delete album: ' + e.message);
-    }
+    });
 }
 
 async function deletePhoto(id, url) {
-    if (!confirm('Delete this photo?')) return;
-    
-    try {
-        // 1. Delete from Storage
-        const fileName = url.split('/').pop();
-        await sb.storage.from('photos').remove([fileName]);
-        
-        // 2. Delete from DB
-        const { error } = await sb.from('photos').delete().eq('id', id);
-        
-        if (error) throw error;
-        
-        fetchData();
-    } catch (e) {
-        console.error('Error deleting photo:', e);
-        alert('Failed to delete photo: ' + e.message);
-    }
+    showConfirm('Delete Photo', 'Are you sure you want to delete this photo?', async () => {
+        try {
+            // 1. Delete from Storage
+            const fileName = url.split('/').pop();
+            await sb.storage.from('photos').remove([fileName]);
+
+            // 2. Delete from DB
+            const { error } = await sb.from('photos').delete().eq('id', id);
+
+            if (error) throw error;
+
+            fetchData();
+        } catch (e) {
+            console.error('Error deleting photo:', e);
+            showAlert('Deletion Failed', 'Failed to delete photo: ' + e.message);
+        }
+    });
 }
 
 // --- Modal Logic ---
@@ -395,17 +422,17 @@ function openModal(modalId) {
     if (elements.modalContainer) {
         elements.modalContainer.classList.add('active');
     }
-    
+
     // Start tracking letter writing time
     if (modalId === 'modal-write-letter') {
         writingStartTime = new Date().toISOString();
         console.log('✍️ Started writing at:', writingStartTime);
     }
-    
+
     // Hide all modals first
     const allModals = elements.modals || document.querySelectorAll('.modal');
     allModals.forEach(m => m.style.display = 'none');
-    
+
     // Show the target modal
     const targetModal = document.getElementById(modalId);
     if (targetModal) {
@@ -422,7 +449,7 @@ function closeModal() {
 // --- Event Listeners ---
 function setupEventListeners() {
     console.log('👂 Setting up event listeners...');
-    
+
     // Auth
     const loginBtn = document.getElementById('btn-do-login');
     if (loginBtn) {
@@ -440,14 +467,14 @@ function setupEventListeners() {
     document.getElementById('nav-albums').onclick = () => showView('view-albums');
     document.getElementById('nav-letters').onclick = () => showView('view-letters');
     document.getElementById('nav-logout').onclick = logout;
-    
+
     // Theme
     if (elements.themeToggle) elements.themeToggle.onclick = toggleTheme;
 
     // Album Actions
     const addAlbumBtn = document.getElementById('btn-add-album');
     if (addAlbumBtn) addAlbumBtn.onclick = () => openModal('modal-add-album');
-    
+
     const backBtn = document.getElementById('btn-back-albums');
     if (backBtn) backBtn.onclick = () => showView('view-albums');
 
@@ -498,7 +525,7 @@ function setupEventListeners() {
     // Letter Actions
     const writeLetterBtn = document.getElementById('btn-write-letter');
     if (writeLetterBtn) writeLetterBtn.onclick = () => openModal('modal-write-letter');
-    
+
     document.querySelectorAll('.author-toggle').forEach(toggle => {
         toggle.onclick = () => {
             document.querySelectorAll('.author-toggle').forEach(t => t.classList.remove('active'));
@@ -514,23 +541,23 @@ function setupEventListeners() {
             const author = activeToggle ? activeToggle.dataset.author : 'Unknown';
             const content = document.getElementById('input-letter-content').value;
             const writingFinishedTime = new Date().toISOString();
-            
+
             if (!author || !content || !title) return;
-            
-            const { error } = await sb.from('notes').insert([{ 
-                title, 
-                author, 
+
+            const { error } = await sb.from('notes').insert([{
+                title,
+                author,
                 content,
                 writing_started_at: writingStartTime,
                 writing_finished_at: writingFinishedTime
             }]);
-            
-            if (!error) { 
-                fetchData(); 
-                closeModal(); 
-                document.getElementById('input-letter-title').value = ''; 
+
+            if (!error) {
+                fetchData();
+                closeModal();
+                document.getElementById('input-letter-title').value = '';
                 document.getElementById('input-letter-content').value = '';
-                writingStartTime = null; 
+                writingStartTime = null;
             }
         };
     }
