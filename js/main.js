@@ -8,7 +8,7 @@ const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 // --- AI Configuration ---
-const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+const HF_API_KEY = import.meta.env.VITE_HF_API_KEY;
 
 let sb = null;
 try {
@@ -436,8 +436,8 @@ async function generateFlashcard() {
     // Allow animation to flip back before generating (so user sees front side briefly)
     await new Promise(r => setTimeout(r, 400));
     
-    if (!GEMINI_API_KEY) {
-        flashcardText.innerText = "Error: VITE_GEMINI_API_KEY not found. Please add it to your environment variables.";
+    if (!HF_API_KEY) {
+        flashcardText.innerText = "Error: VITE_HF_API_KEY not found. Please add it to your environment variables.";
         flashcardInner.classList.add('is-flipped');
         btnNext.disabled = false;
         btnNext.innerText = 'Generate Next Question';
@@ -445,30 +445,41 @@ async function generateFlashcard() {
     }
     
     try {
-        const prompt = `You are an AI generating fun, engaging, and meaningful flashcard questions for couples.
-Generate exactly ONE short and interesting question (max 2 sentences) for the category: "${activeFlashcardCategory}".
-The question should be directly addressed to the partner. Only return the question text without quotes or preamble. Make sure it feels natural.`;
-
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+        const response = await fetch(`https://api-inference.huggingface.co/models/meta-llama/Meta-Llama-4-8B-Instruct/v1/chat/completions`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${HF_API_KEY}`
+            },
             body: JSON.stringify({
-                contents: [{ parts: [{ text: prompt }] }],
-                generationConfig: { temperature: 0.9, maxOutputTokens: 100 }
+                model: "meta-llama/Meta-Llama-4-8B-Instruct",
+                messages: [
+                    { 
+                        role: "system", 
+                        content: "You are an AI generating fun, engaging, and meaningful flashcard questions for couples. Generate exactly ONE short and interesting question (max 2 sentences). The question should be directly addressed to the partner. Only return the actual question text without any quotes, lists, or preamble." 
+                    },
+                    { 
+                        role: "user", 
+                        content: `Generate a question for the category: "${activeFlashcardCategory}"` 
+                    }
+                ],
+                temperature: 0.9,
+                max_tokens: 100
             })
         });
         
         const data = await response.json();
         
-        if (data.error) throw new Error(data.error.message);
+        if (data.error) throw new Error(data.error.message || data.error);
+        if (!data.choices || !data.choices[0]) throw new Error("Invalid response format");
         
-        let aiText = data.candidates[0].content.parts[0].text.trim();
+        let aiText = data.choices[0].message.content.trim();
         // Remove trailing/leading quotes if any
         aiText = aiText.replace(/^["']|["']$/g, '');
         
         flashcardText.innerText = aiText;
     } catch (e) {
-        console.error('Gemini Error:', e);
+        console.error('Hugging Face Error:', e);
         flashcardText.innerText = "Oops, failed to generate a question! Let's try again.";
     } finally {
         flashcardInner.classList.add('is-flipped');
